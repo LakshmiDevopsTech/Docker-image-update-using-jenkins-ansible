@@ -1,0 +1,114 @@
+---
+- name: "Building Docker Image & Pushing To https://hub.docker.com"
+  hosts: build
+  become: true
+  vars:
+    docker_password: "password"
+    repo_url: "https://github.com/LakshmiDevopsTech/Flask-app.git"
+    image_name: "lakshmidevopstech/flaskapp"
+    repo_dest: "/var/repository/"
+  tasks:
+
+    - name: "Build-Server - Docker Installation"
+      shell: 'amazon-linux-extras install docker -y'
+      args:
+       warn: no
+
+    - name: "Build-Server - Additional Package Installation"
+      yum:
+        name: git,python-pip
+        state: present
+
+
+    - name: "Build-Server - Python Docker Extension Installation"
+      pip:
+        name: docker-py
+
+    - name: "Build-Server - Docker Service Restart/Enable"
+      service:
+        name: docker
+        state: restarted
+        enabled: true
+
+    - name: "Build-Server - Cloning Repository"
+      git:
+        repo: "{{ repo_url }}"
+        dest: "{{ repo_dest }}"
+      register: repo_status
+
+
+
+    - name: "Build-Setp - Login To Remote Repository"
+      when: repo_status.changed == true
+      docker_login:
+        username: lakshmidevopstech
+        password: "{{ docker_password }}"
+
+
+
+    - name: "Build-Setp - Building Image"
+      when: repo_status.changed == true
+      docker_image:
+        source: build
+        build:
+          path: "{{ repo_dest }}"
+          pull: yes
+        name: "{{ image_name }}"
+        tag: "{{ item }}"
+        push: true
+        force_tag: yes
+        force_source: yes
+      with_items:
+        - "{{ repo_status.after }}"
+        - latest
+
+
+    - name: "Build-Setp - removing image"
+      when: repo_status.changed == true
+      docker_image:
+        state: absent
+        name: "{{ image_name }}"
+        tag: "{{ item }}"
+      with_items:
+        - "{{ repo_status.after }}"
+        - latest
+
+
+
+- name: "Running Latest Docker Image From https://hub.docker.com"
+  hosts: test
+  become: true
+  vars:
+    image_name: "lakshmidevopstech/flaskapp"
+  tasks:
+
+    - name: "Deployment-Server - Docker Installation"
+      shell: 'amazon-linux-extras install docker -y'
+      args:
+        warn: no
+
+
+    - name: "Deployment-Server - Additional Package Installation"
+      yum:
+        name: python-pip
+        state: present
+
+
+    - name: "Deployment-Server - Python Docker Extension Installation"
+      pip:
+        name: docker-py
+
+    - name: "Deployment-Server - Docker service restart/enable"
+      service:
+        name: docker
+        state: restarted
+        enabled: true
+
+    - name: "Deployment-Server - Run Container"
+      docker_container:
+        name: webserver
+        image: "{{ image_name }}:latest"
+        recreate: yes
+        pull: yes
+        published_ports:
+          - "80:5000"
