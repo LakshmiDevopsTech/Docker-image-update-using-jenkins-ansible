@@ -45,7 +45,7 @@ Webohook configuration in git repository and inform about this in Jenkins
 The playboom has two hosts. One for build server and another for test server.
 For more details please check main.yml file.
 ## Architecture
-![alt_text](https://i.ibb.co/K0XvV5w/docker-jenkins.png)
+![alt_text](https://i.ibb.co/N1WNh3L/Blank-diagram.png)
 
 ### ⚙️ Connect with Me
 
