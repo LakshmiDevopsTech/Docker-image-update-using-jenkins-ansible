@@ -42,7 +42,7 @@ Webohook configuration in git repository and inform about this in Jenkins
 ![alt_text](https://i.ibb.co/TRCWpjG/webhook.png)
 ![alt_text](https://i.ibb.co/zXC8zwX/chrome-Anmm-Kb7-I9r.png)
 ## Behind the Playbook
-The playboom has two hosts. One for build server and another for test server.
+The playbook has two hosts. One for build server and another for test server.
 For more details please check main.yml file.
 ## Architecture
 ![alt_text](https://i.ibb.co/N1WNh3L/Blank-diagram.png)
